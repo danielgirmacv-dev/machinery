@@ -13,7 +13,7 @@
 
         <div class="relative z-10" x-data>
             @include('components.layout.sidebar')
-            <div class="transition-all duration-300" :class="$store.sidebar.collapsed ? 'lg:pl-20' : 'lg:pl-64'">
+            <div class="transition-all duration-300" :class="$store.sidebar.collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-64'">
                 @include('components.layout.header')
                 <main class="py-6">
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

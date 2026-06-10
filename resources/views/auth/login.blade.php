@@ -55,11 +55,7 @@
                 <div class="relative z-10 flex flex-col items-center">
                     {{-- Logo & Brand Section --}}
                     <div class="flex flex-col items-center text-center mb-10">
-                        {{-- Icon + Wordmark row (exact brand layout) --}}
-                        <div class="flex items-center gap-4">
-                            <x-eec-mark class="h-14 w-auto text-eec-cyan shrink-0 animate-float" />
-                            <span class="text-5xl font-black tracking-tight text-[#005a6a] dark:text-white leading-none select-none">EEC</span>
-                        </div>
+                        <x-eec-brand size="xl" class="animate-float" />
                         {{-- Official slogan --}}
                         <div class="mt-3 flex items-center justify-center gap-2 text-[10px] font-semibold text-gray-400 dark:text-gray-500" style="letter-spacing:.18em">
                             <span>Collaborate</span>
