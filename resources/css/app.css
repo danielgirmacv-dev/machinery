@@ -1,131 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased dark:bg-gray-900 dark:text-gray-100;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    background-image: url('/background.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    @apply bg-slate-50 text-gray-900 dark:bg-[#0a0f1a] dark:text-gray-100;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 
-  .dark h1,
-  .dark h2,
-  .dark h3,
-  .dark h4 {
-    @apply text-white;
-  }
-
-  .dark table {
-    @apply text-gray-300;
-  }
-
-  .dark thead {
-    @apply bg-gray-800/50 text-gray-300;
-  }
-
-  .dark th {
-    @apply text-gray-300 border-gray-700;
-  }
-
-  .dark td {
-    @apply border-gray-700 text-gray-300;
-  }
-
-  .dark tr:hover {
-    @apply bg-gray-700/50;
-  }
-
-  .dark body {
-    background-image: linear-gradient(rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.95)), url('/background.png');
-  }
+  .dark h1, .dark h2, .dark h3, .dark h4 { @apply text-white; }
+  .dark table { @apply text-gray-300; }
+  .dark thead { @apply bg-gray-800/50 text-gray-300; }
+  .dark th { @apply text-gray-300 border-gray-700; }
+  .dark td { @apply border-gray-700 text-gray-300; }
+  .dark tr:hover { @apply bg-gray-700/50; }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-gray-900;
+    @apply inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-gray-900;
   }
-
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600 shadow-sm hover:shadow;
+    @apply btn bg-gradient-to-r from-eec-cyan to-eec-teal text-white hover:shadow-lg hover:shadow-eec-cyan/25 hover:-translate-y-0.5 active:translate-y-0;
   }
-
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700;
+    @apply btn bg-white/80 text-gray-700 border border-gray-200 hover:bg-white hover:border-gray-300 hover:shadow-md dark:bg-white/5 dark:text-gray-200 dark:border-white/10 dark:hover:bg-white/10 backdrop-blur-sm;
   }
-
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
-  }
-
-  .dark .btn-danger {
-    @apply bg-red-500 hover:bg-red-600 text-white border-transparent;
+    @apply btn bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg hover:shadow-red-500/25;
   }
 
   .input {
-    @apply block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-500 dark:disabled:bg-gray-900 transition-all;
+    @apply block w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-eec-cyan/40 focus:border-eec-cyan disabled:bg-gray-100 disabled:cursor-not-allowed dark:bg-white/5 dark:border-white/10 dark:text-gray-100 dark:placeholder-gray-500 dark:disabled:bg-gray-900 transition-all duration-300;
   }
-
   .input-error {
     @apply border-red-300 focus:ring-red-500 focus:border-red-500 dark:border-red-500;
   }
-
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300;
+    @apply block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 transition-all duration-300;
+    @apply bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200/60 dark:bg-white/[0.04] dark:border-white/[0.06] transition-all duration-300;
+  }
+  .card-hover {
+    @apply hover:shadow-xl hover:shadow-gray-900/5 hover:-translate-y-0.5 dark:hover:shadow-black/20 dark:hover:border-white/10;
   }
 
   .table-container {
-    @apply overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800/50;
+    @apply overflow-x-auto rounded-2xl border border-gray-200/60 dark:border-white/[0.06] dark:bg-white/[0.02] backdrop-blur;
+  }
+
+  /* Glass morphism panels */
+  .glass {
+    @apply bg-white/60 backdrop-blur-2xl border border-white/20 dark:bg-white/[0.04] dark:border-white/[0.08];
+  }
+  .glass-dark {
+    @apply bg-gray-900/60 backdrop-blur-2xl border border-white/10;
   }
 }
 
 @layer utilities {
-  .animate-spin-slow {
-    animation: spin 8s linear infinite;
-  }
+  .animate-spin-slow { animation: spin 8s linear infinite; }
+  .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600; }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slide-up { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes slide-down { from { transform: translateY(-12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes zoom-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes count-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes glow-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+  @keyframes orbit { from { transform: rotate(0deg) translateX(100px) rotate(0deg); } to { transform: rotate(360deg) translateX(100px) rotate(-360deg); } }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors;
-  }
-
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slide-in-bottom {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @keyframes zoom-in {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  .animate-in { animation-duration: 500ms; animation-fill-mode: both; }
+  .animate-in { animation-duration: 600ms; animation-fill-mode: both; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
   .fade-in { animation-name: fade-in; }
-  .slide-in-from-bottom { animation-name: slide-in-bottom; }
+  .slide-in-from-bottom { animation-name: slide-up; }
   .zoom-in { animation-name: zoom-in; }
+  .animate-float { animation: float 4s ease-in-out infinite; }
+  .animate-shimmer { animation: shimmer 3s linear infinite; background-size: 200% 100%; }
+  .animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
+  .animate-orbit { animation: orbit 20s linear infinite; }
+
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
 }

@@ -223,7 +223,7 @@
                 <form method="POST" action="{{ route('machines.import') }}" enctype="multipart/form-data" class="p-8 space-y-4">
                     @csrf
                     <p class="text-sm text-gray-600 dark:text-gray-300">
-                        Upload an Excel (.xlsx) or CSV file. Only <strong>MACHINE CODE</strong> is required — all other columns are optional.
+                        Upload an Excel (.xlsx) or CSV file. <strong>CATEGORY</strong>, <strong>MACHINE TYPE</strong>, and <strong>MACHINE CODE</strong> are required.
                     </p>
                     <div class="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-4">
                         <span class="text-amber-500 text-lg">💡</span>

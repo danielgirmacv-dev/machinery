@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Department;
 use App\Models\Location;
 use App\Models\Machine;
+use App\Models\MachineType;
 use App\Services\MachineService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -178,14 +179,14 @@ class MachineController extends Controller
     {
         $format = $request->query('format', 'csv');
         $header = [
-            'MACHINE GROUP', 'MACHINE CODE', 'PLATE NO.', 
-            'DETAIL DESCRIPTION', 'MODEL', 'CHASSIS NO./SERIAL NO.', 
+            'CATEGORY', 'MACHINE TYPE', 'MACHINE CODE', 'PLATE NO.',
+            'DETAIL DESCRIPTION', 'MODEL', 'CHASSIS NO./SERIAL NO.',
             'ENGINE TYPE / MODEL', 'ENGINE S.NO',
             'CURRENT STATUS', 'LOCATION'
         ];
         $example = [
-            'MID-LIGHT DUTY VEHICLES', 'EEC-10-05-001', 'HP-02-0181', 
-            'DOUBLE CABIN PICKUP HILUX 4X4 MT GD', 'HILUX', 'DLH1264XLF123456', 
+            'Midlight Duty Vehicles', 'Double Cab Pick Up', 'EEC-10-05-001', 'HP-02-0181',
+            'DOUBLE CABIN PICKUP HILUX 4X4 MT GD', 'HILUX', 'DLH1264XLF123456',
             '2KD-FTV', '1234567',
             'Working', 'ADAS'
         ];
@@ -196,10 +197,10 @@ class MachineController extends Controller
             
             // Apply bold font to header
             $sheet->fromArray([$header, $example]);
-            $sheet->getStyle('A1:J1')->getFont()->setBold(true);
+            $sheet->getStyle('A1:K1')->getFont()->setBold(true);
             
             // Auto-size columns
-            foreach (range('A', 'J') as $col) {
+            foreach (range('A', 'K') as $col) {
                 $sheet->getColumnDimension($col)->setAutoSize(true);
             }
 
@@ -290,9 +291,10 @@ class MachineController extends Controller
         $expectedMap = [
             'machine_code'         => ['machine_code', 'code', 'asset_code', 'asset_no', 'eec_number'],
             'machine_name'         => ['machine_name', 'detail_description', 'description', 'name', 'asset_name'],
-            'category'             => ['category', 'eec'],
+            'category'             => ['category', 'eec', 'category_name', 'group_name'],
+            'machine_type_name'    => ['machine_type', 'machine_type_name', 'type_name'],
             'machine_group'        => ['machine_group', 'group'],
-            'sub_category'         => ['sub_category', 'classification_code'],
+            'sub_category'         => ['sub_category', 'classification_code', 'category_code', 'machine_type_code'],
             'model'                => ['model', 'type'],
             'serial_number'        => ['serial_number', 'chassis_no_serial_no', 'chassis_noserial_no', 'chassis_no', 'serial_no', 'chassis', 'serial'],
             'engine_type'          => ['engine_type', 'engine_type_model', 'engine_model', 'engine_type_model', 'enginetype', 'engine'],
@@ -334,11 +336,14 @@ class MachineController extends Controller
             }
         }
 
-        if (!isset($columnIndexes['machine_code'])) {
-            return response()->json([
-                'message' => 'Missing required column: machine_code.',
-                'columns' => $normalizedHeader,
-            ], 422);
+        $requiredColumns = ['machine_code', 'category', 'machine_type_name'];
+        foreach ($requiredColumns as $requiredColumn) {
+            if (!isset($columnIndexes[$requiredColumn])) {
+                return response()->json([
+                    'message' => "Missing required column: {$requiredColumn}.",
+                    'columns' => $normalizedHeader,
+                ], 422);
+            }
         }
 
         // -------------------------------------------------------
@@ -385,9 +390,28 @@ class MachineController extends Controller
                 ];
                 continue;
             }
+            if (empty($rowData['category'] ?? null)) {
+                $skippedCount++;
+                $skippedDetails[] = [
+                    'row_number' => $currentRowNum,
+                    'reason'     => 'Missing Category',
+                    'data'       => $rowData
+                ];
+                continue;
+            }
+            if (empty($rowData['machine_type_name'] ?? null)) {
+                $skippedCount++;
+                $skippedDetails[] = [
+                    'row_number' => $currentRowNum,
+                    'reason'     => 'Missing Machine Type',
+                    'data'       => $rowData
+                ];
+                continue;
+            }
 
             $eecPrefixRaw       = $rowData['category'] ?? null;
-            $categoryNameRaw    = $rowData['machine_group'] ?? null;
+            $categoryNameRaw    = $rowData['machine_group'] ?? ($rowData['category'] ?? null);
+            $machineTypeNameRaw = $rowData['machine_type_name'] ?? null;
             $subCategoryCodeRaw = $rowData['sub_category'] ?? null;
             $fullCategoryName   = null;
             $categoryCode       = '';
@@ -399,7 +423,11 @@ class MachineController extends Controller
                 } elseif (preg_match('/^(EEC\s?-\s?\d+)/i', $code, $m)) {
                     $eecPrefix = strtoupper(str_replace(' ', '', $m[1]));
                 }
-                $fullCategoryName = !empty($eecPrefix) ? "{$eecPrefix} | {$categoryNameRaw}" : $categoryNameRaw;
+                if (str_contains((string) $categoryNameRaw, '|')) {
+                    $fullCategoryName = trim($categoryNameRaw);
+                } else {
+                    $fullCategoryName = !empty($eecPrefix) ? "{$eecPrefix} | {$categoryNameRaw}" : $categoryNameRaw;
+                }
                 $neededCategories[$fullCategoryName] = true;
 
                 if (!empty($subCategoryCodeRaw)) {
@@ -415,7 +443,7 @@ class MachineController extends Controller
                     $neededMachineTypes[$mtKey] = [
                         'categoryName' => $fullCategoryName,
                         'categoryCode' => $categoryCode,
-                        'description'  => $rowData['machine_name'] ?? '(Imported)',
+                        'description'  => $machineTypeNameRaw ?: ($rowData['machine_name'] ?? '(Imported)'),
                         'eec_number'   => strtoupper(str_replace(' ', '', $code)),
                     ];
                 }
@@ -430,6 +458,7 @@ class MachineController extends Controller
                 'code'             => $code,
                 'fullCategoryName' => $fullCategoryName,
                 'categoryCode'     => $categoryCode,
+                'machineTypeName'  => $machineTypeNameRaw,
                 'status'           => $statusMap[$statusRaw] ?? 'working',
             ];
         }
@@ -456,6 +485,7 @@ class MachineController extends Controller
                 }
                 $categoryMap = \App\Models\Category::whereIn('name', array_keys($neededCategories))->pluck('id', 'name')->toArray();
             }
+            $allCategories = Category::select('id', 'name')->get();
 
             // --- Departments ---
             $departmentMap = [];
@@ -481,6 +511,7 @@ class MachineController extends Controller
 
             // --- Machine Types (needs category IDs) ---
             $machineTypeMap = [];
+            $machineTypeByDescription = [];
             if (!empty($neededMachineTypes)) {
                 $existingMTs = \App\Models\MachineType::select('id', 'category_id', 'category_code')->get();
                 foreach ($existingMTs as $mt) {
@@ -510,6 +541,11 @@ class MachineController extends Controller
                     }
                 }
             }
+            $allMachineTypes = MachineType::select('id', 'category_id', 'category_code', 'description')->get();
+            foreach ($allMachineTypes as $mt) {
+                $machineTypeMap["{$mt->category_id}|" . strtoupper(str_replace(' ', '', (string) $mt->category_code))] = $mt->id;
+                $machineTypeByDescription[strtolower(trim((string) $mt->description)) . "|{$mt->category_id}"] = $mt->id;
+            }
 
             // -------------------------------------------------------
             // PASS 3: Build machine payload & batch upsert (500/chunk)
@@ -524,6 +560,7 @@ class MachineController extends Controller
                 $code             = $entry['code'];
                 $fullCategoryName = $entry['fullCategoryName'];
                 $categoryCode     = $entry['categoryCode'];
+                $machineTypeName  = $entry['machineTypeName'];
                 $status           = $entry['status'];
 
                 $name = $rowData['machine_name'] ?? null;
@@ -533,10 +570,26 @@ class MachineController extends Controller
                     $incompleteRows[] = $code;
                 }
 
-                $categoryId    = $fullCategoryName ? ($categoryMap[$fullCategoryName] ?? null) : null;
+                $categoryId = $fullCategoryName ? ($categoryMap[$fullCategoryName] ?? null) : null;
+                if (!$categoryId && $fullCategoryName) {
+                    $categoryNeedle = strtolower(trim($fullCategoryName));
+                    foreach ($allCategories as $category) {
+                        $candidate = strtolower(trim($category->name));
+                        $parts = array_map('trim', explode('|', $candidate));
+                        $categoryLabel = strtolower($parts[1] ?? $candidate);
+                        if ($candidate === $categoryNeedle || $categoryLabel === $categoryNeedle) {
+                            $categoryId = $category->id;
+                            break;
+                        }
+                    }
+                }
                 $machineTypeId = null;
                 if ($categoryId && !empty($categoryCode)) {
-                    $machineTypeId = $machineTypeMap["{$categoryId}|{$categoryCode}"] ?? null;
+                    $normalizedTypeCode = strtoupper(str_replace(' ', '', $categoryCode));
+                    $machineTypeId = $machineTypeMap["{$categoryId}|{$normalizedTypeCode}"] ?? null;
+                }
+                if ($categoryId && !$machineTypeId && !empty($machineTypeName)) {
+                    $machineTypeId = $machineTypeByDescription[strtolower(trim($machineTypeName)) . "|{$categoryId}"] ?? null;
                 }
                 $departmentId = !empty($rowData['department'] ?? null) ? ($departmentMap[$rowData['department']] ?? null) : null;
                 $locationId   = !empty($rowData['location'] ?? null)   ? ($locationMap[$rowData['location']]   ?? null) : null;

@@ -1,0 +1,6 @@
+---
+# cPanel Git Version Control — runs automatically after each pull/deploy.
+# https://docs.cpanel.net/cpanel/files/git-version-control/
+deployment:
+  tasks:
+    - /bin/bash deploy/post-deploy.sh
